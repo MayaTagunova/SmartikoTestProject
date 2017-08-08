@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include "mqtt/client.h"
+#include "jsoncpp/json/json.h"
 
 const std::string SERVER_ADDRESS("tcp://localhost:1883");
 const std::string CLIENT_ID("Smartiko-server");
@@ -28,7 +29,17 @@ class callback : public virtual mqtt::callback
     }
 
     void message_arrived(mqtt::const_message_ptr msg) override {
-        std::cout << msg->get_topic() << ": " << msg->get_payload_str() << std::endl;
+        Json::Value message;
+        Json::Reader reader;
+        if (!reader.parse(msg->get_payload_str().c_str(), message))
+        {
+            std::cerr  << "JSON parsing error: "
+                       << reader.getFormattedErrorMessages();
+            return;
+        }
+        std::cout << message.get("method", "<empty>").asString() << std::endl;
+        std::cout << message.get("uri", "<empty>").asString() << std::endl;
+        std::cout << message.get("body", "<empty>").asString() << std::endl;
     }
 
     void delivery_complete(mqtt::delivery_token_ptr token) override {}
