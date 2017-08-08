@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstring>
 #include "mqtt/client.h"
+#include "jsoncpp/json/json.h"
 
 const std::string SERVER_ADDRESS { "tcp://localhost:1883" };
 const std::string CLIENT_ID { "Smartiko-client" };
@@ -48,13 +49,42 @@ int main(int argc, char* argv[])
 
         while (true)
         {
-            std::cout << "\nEnter message: " << std::endl;
+            std::cout << "\nEnter method (GET/DELETE/POST): " << std::endl;
 
-            std::string message;
-            std::getline(std::cin, message);
+            std::string method;
+            std::getline(std::cin, method);
+
+            std::cout << "\nEnter URI: " << std::endl;
+
+            std::string uri;
+            std::getline(std::cin, uri);
+
+            std::string body;
+
+            if (method == "POST")
+            {
+                std::cout << "\nEnter body: " << std::endl;
+                std::getline(std::cin, body);
+            }
+
+            if ((method != "GET") &&
+                (method != "DELETE") &&
+                (method != "POST"))
+            {
+                std::cerr << "\nInvalid method!" << std::endl;
+                continue;
+            }
+
+            Json::Value message;
+            message["method"] = method;
+            message["uri"] = uri;
+            if (!body.empty())
+            {
+                message["body"] = body;
+            }
 
             std::cout << "\nSending message..." << std::endl;
-            auto pubmsg = mqtt::make_message(argv[1], message);
+            auto pubmsg = mqtt::make_message(argv[1], message.toStyledString());
             pubmsg->set_qos(QOS);
             client.publish(pubmsg);
             std::cout << "...OK" << std::endl;
