@@ -12,17 +12,6 @@ const std::string CLIENT_ID { "Smartiko-client" };
 
 const int QOS = 1;
 
-class user_callback : public virtual mqtt::callback
-{
-    void connection_lost(const std::string& cause) override {
-        std::cout << "\nConnection lost" << std::endl;
-        if (!cause.empty())
-            std::cout << "\tcause: " << cause << std::endl;
-    }
-
-public:
-};
-
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -33,9 +22,6 @@ int main(int argc, char* argv[])
 
     std::cout << "Initialzing..." << std::endl;
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
-
-    user_callback cb;
-    client.set_callback(cb);
 
     mqtt::connect_options connOpts;
     connOpts.set_keep_alive_interval(20);
