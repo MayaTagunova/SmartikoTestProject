@@ -20,22 +20,20 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "Initialzing..." << std::endl;
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
 
     mqtt::connect_options connOpts;
     connOpts.set_keep_alive_interval(20);
     connOpts.set_clean_session(true);
-    std::cout << "...OK" << std::endl;
 
     try {
-        std::cout << "\nConnecting..." << std::endl;
+        std::cout << "Connecting..." << std::endl;
         client.connect(connOpts);
         std::cout << "...OK" << std::endl;
 
         while (true)
         {
-            std::cout << "\nEnter method (GET/DELETE/POST): " << std::endl;
+            std::cout << "Enter method (GET/DELETE/POST): " << std::endl;
 
             std::string method;
             std::getline(std::cin, method);
@@ -44,11 +42,11 @@ int main(int argc, char* argv[])
                 (method != "DELETE") &&
                 (method != "POST"))
             {
-                std::cerr << "\nInvalid method!" << std::endl;
+                std::cerr << "Invalid method!" << std::endl;
                 continue;
             }
 
-            std::cout << "\nEnter URI: " << std::endl;
+            std::cout << "Enter URI: " << std::endl;
 
             std::string uri;
             std::getline(std::cin, uri);
@@ -57,7 +55,7 @@ int main(int argc, char* argv[])
 
             if (method == "POST")
             {
-                std::cout << "\nEnter body: " << std::endl;
+                std::cout << "Enter body: " << std::endl;
                 std::getline(std::cin, body);
             }
 
@@ -69,14 +67,14 @@ int main(int argc, char* argv[])
                 message["body"] = body;
             }
 
-            std::cout << "\nSending message..." << std::endl;
+            std::cout << "Sending message..." << std::endl;
             auto pubmsg = mqtt::make_message(argv[1], message.toStyledString());
             pubmsg->set_qos(QOS);
             client.publish(pubmsg);
             std::cout << "...OK" << std::endl;
         }
 
-        std::cout << "\nDisconnecting..." << std::endl;
+        std::cout << "Disconnecting..." << std::endl;
         client.disconnect();
         std::cout << "...OK" << std::endl;
     }
@@ -85,6 +83,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "\nExiting" << std::endl;
+    std::cout << "Exiting" << std::endl;
     return 0;
 }

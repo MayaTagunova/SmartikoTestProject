@@ -154,8 +154,6 @@ PGconn *Model::connect()
         return nullptr;
     }
 
-    std::cout << "Connected to the database" << std::endl;
-
     PGresult *result = PQexec(connection, "BEGIN");
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
