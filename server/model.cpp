@@ -9,8 +9,7 @@ Model::Model()
 void Model::getPost(int ID)
 {
     PGconn *connection = connect();
-    if (connection == nullptr)
-    {
+    if (connection == nullptr) {
         return;
     }
 
@@ -28,17 +27,14 @@ void Model::getPost(int ID)
                                     formats,
                                     0);
 
-    if (PQresultStatus(result) != PGRES_TUPLES_OK)
-    {
+    if (PQresultStatus(result) != PGRES_TUPLES_OK) {
         std::cerr << "SELECT failed: " << PQerrorMessage(connection) << std::endl;
     }
 
-    if (PQntuples(result) == 0)
-    {
+    if (PQntuples(result) == 0) {
         std::cout << "Post not found" << std::endl;
     }
-    else
-    {
+    else {
         std::cout << "title: " << PQgetvalue(result, 0, 2) << std::endl;
         std::cout << "content: " << PQgetvalue(result, 0, 1) << std::endl;
     }
@@ -50,8 +46,7 @@ void Model::getPost(int ID)
 void Model::deletePost(int ID)
 {
     PGconn *connection = connect();
-    if (connection == nullptr)
-    {
+    if (connection == nullptr) {
         return;
     }
 
@@ -69,8 +64,7 @@ void Model::deletePost(int ID)
                                     formats,
                                     0);
 
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-    {
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         std::cerr << "DELETE failed: " << PQerrorMessage(connection) << std::endl;
     }
 
@@ -81,8 +75,7 @@ void Model::deletePost(int ID)
 void Model::addPost(Json::Value body)
 {
     PGconn *connection = connect();
-    if (connection == nullptr)
-    {
+    if (connection == nullptr) {
         return;
     }
 
@@ -100,8 +93,7 @@ void Model::addPost(Json::Value body)
                                     nullptr,
                                     0);
 
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-    {
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         std::cerr << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
     }
 
@@ -112,8 +104,7 @@ void Model::addPost(Json::Value body)
 void Model::modifyPost(int ID, Json::Value body)
 {
     PGconn *connection = connect();
-    if (connection == nullptr)
-    {
+    if (connection == nullptr) {
         return;
     }
 
@@ -137,8 +128,7 @@ void Model::modifyPost(int ID, Json::Value body)
                                     formats,
                                     0);
 
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-    {
+    if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         std::cerr << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
     }
 

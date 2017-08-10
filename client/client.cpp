@@ -14,8 +14,7 @@ const int QOS = 1;
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2)
-    {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <topic>" << std::endl;
         return 1;
     }
@@ -31,8 +30,7 @@ int main(int argc, char* argv[])
         client.connect(options);
         std::cout << "...OK" << std::endl;
 
-        while (true)
-        {
+        while (true) {
             std::cout << "Enter method (GET/DELETE/POST): " << std::endl;
 
             std::string method;
@@ -40,8 +38,7 @@ int main(int argc, char* argv[])
 
             if ((method != "GET") &&
                 (method != "DELETE") &&
-                (method != "POST"))
-            {
+                (method != "POST")) {
                 std::cerr << "Invalid method!" << std::endl;
                 continue;
             }
@@ -53,8 +50,7 @@ int main(int argc, char* argv[])
 
             std::string body;
 
-            if (method == "POST")
-            {
+            if (method == "POST") {
                 std::cout << "Enter body: " << std::endl;
                 std::getline(std::cin, body);
             }
@@ -62,8 +58,7 @@ int main(int argc, char* argv[])
             Json::Value message;
             message["method"] = method;
             message["uri"] = uri;
-            if (!body.empty())
-            {
+            if (!body.empty()) {
                 message["body"] = body;
             }
 
