@@ -40,6 +40,14 @@ int main(int argc, char* argv[])
             std::string method;
             std::getline(std::cin, method);
 
+            if ((method != "GET") &&
+                (method != "DELETE") &&
+                (method != "POST"))
+            {
+                std::cerr << "\nInvalid method!" << std::endl;
+                continue;
+            }
+
             std::cout << "\nEnter URI: " << std::endl;
 
             std::string uri;
@@ -51,14 +59,6 @@ int main(int argc, char* argv[])
             {
                 std::cout << "\nEnter body: " << std::endl;
                 std::getline(std::cin, body);
-            }
-
-            if ((method != "GET") &&
-                (method != "DELETE") &&
-                (method != "POST"))
-            {
-                std::cerr << "\nInvalid method!" << std::endl;
-                continue;
             }
 
             Json::Value message;
