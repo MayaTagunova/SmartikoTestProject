@@ -148,7 +148,7 @@ void Model::modifyPost(int ID, Json::Value body)
 
 PGconn *Model::connect()
 {
-    PGconn *connection = PQconnectdb("dbname=Smartikodb host=localhost user=postgres");
+    PGconn *connection = PQconnectdb("dbname=Blog host=localhost user=postgres");
     if (PQstatus(connection) == CONNECTION_BAD) {
         std::cerr << "Connection failed!" << std::endl;
         return nullptr;
