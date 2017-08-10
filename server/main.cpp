@@ -23,10 +23,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    mqtt::connect_options connOpts;
-    connOpts.set_keep_alive_interval(20);
-    connOpts.set_clean_session(true);
-    connOpts.set_automatic_reconnect(true);
+    mqtt::connect_options options;
+    options.set_keep_alive_interval(20);
+    options.set_clean_session(true);
+    options.set_automatic_reconnect(true);
 
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
     Model model;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 
     try {
         std::cout << "Connecting to the MQTT server..." << std::flush;
-        client.connect(connOpts);
+        client.connect(options);
         client.subscribe(argv[1], QOS);
         std::cout << "OK" << std::endl;
 
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
         client.disconnect();
         std::cout << "OK" << std::endl;
     }
-    catch (const mqtt::exception& exc) {
-        std::cerr << exc.what() << std::endl;
+    catch (const mqtt::exception& exception) {
+        std::cerr << exception.what() << std::endl;
         return 1;
     }
 
