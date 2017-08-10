@@ -23,7 +23,8 @@ void Controller::handleRequest(std::string request)
 
     if (!message.isMember("uri"))
     {
-        std::cerr << "Invalid query: no command!" << std::endl;
+        std::cerr << "Invalid query: command not specified" << std::endl;
+        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
         return;
     }
 
@@ -40,13 +41,15 @@ void Controller::handleRequest(std::string request)
 
     if (elements.size() == 0)
     {
-        std::cerr << "Invalid query: no command!" << std::endl;
+        std::cerr << "Invalid query: command not specified" << std::endl;
+        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
         return;
     }
 
     if (elements[0] != SECTION)
     {
-        std::cerr << "Invalid query: command not recognized!" << std::endl;
+        std::cerr << "Invalid query: command not recognized" << std::endl;
+        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
         return;
     }
 
@@ -54,7 +57,8 @@ void Controller::handleRequest(std::string request)
     {
         if (elements.size() < 2)
         {
-            std::cerr << "Invalid query: no ID!" << std::endl;
+            std::cerr << "Invalid query: ID not specified" << std::endl;
+            std::cerr << "Usage: " << "GET /posts/<ID>" << std::endl;
             return;
         }
 
@@ -66,7 +70,8 @@ void Controller::handleRequest(std::string request)
     {
         if (elements.size() < 2)
         {
-            std::cerr << "Invalid query: no ID!" << std::endl;
+            std::cerr << "Invalid query: ID not specified" << std::endl;
+            std::cerr << "Usage: " << "DELETE /posts/<ID>" << std::endl;
             return;
         }
 
@@ -82,6 +87,7 @@ void Controller::handleRequest(std::string request)
             if (!reader.parse(message["body"].asString(), body))
             {
                 std::cerr << "Body was invalid JSON object" << std::endl;
+                std::cerr << "Usage: " << "POST /posts/[ID] {\"title\":<title>, \"content\":<content>}" << std::endl;
                 return;
             }
         }
