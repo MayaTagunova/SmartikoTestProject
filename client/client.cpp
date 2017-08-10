@@ -12,85 +12,64 @@ const std::string CLIENT_ID { "Smartiko-client" };
 
 const int QOS = 1;
 
-class user_callback : public virtual mqtt::callback
-{
-    void connection_lost(const std::string& cause) override {
-        std::cout << "\nConnection lost" << std::endl;
-        if (!cause.empty())
-            std::cout << "\tcause: " << cause << std::endl;
-    }
-
-public:
-};
-
 int main(int argc, char* argv[])
 {
-    if (argc < 2)
-    {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <topic>" << std::endl;
         return 1;
     }
 
-    std::cout << "Initialzing..." << std::endl;
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
 
-    user_callback cb;
-    client.set_callback(cb);
-
-    mqtt::connect_options connOpts;
-    connOpts.set_keep_alive_interval(20);
-    connOpts.set_clean_session(true);
-    std::cout << "...OK" << std::endl;
+    mqtt::connect_options options;
+    options.set_keep_alive_interval(20);
+    options.set_clean_session(true);
 
     try {
-        std::cout << "\nConnecting..." << std::endl;
-        client.connect(connOpts);
+        std::cout << "Connecting..." << std::endl;
+        client.connect(options);
         std::cout << "...OK" << std::endl;
 
-        while (true)
-        {
-            std::cout << "\nEnter method (GET/DELETE/POST): " << std::endl;
+        while (true) {
+            std::cout << "Enter method (GET/DELETE/POST): " << std::endl;
 
             std::string method;
             std::getline(std::cin, method);
 
-            std::cout << "\nEnter URI: " << std::endl;
+            if ((method != "GET") &&
+                (method != "DELETE") &&
+                (method != "POST")) {
+                std::cerr << "Invalid method!" << std::endl;
+                continue;
+            }
+
+            std::cout << "Enter URI: " << std::endl;
 
             std::string uri;
             std::getline(std::cin, uri);
 
             std::string body;
 
-            if (method == "POST")
-            {
-                std::cout << "\nEnter body: " << std::endl;
+            if (method == "POST") {
+                std::cout << "Enter body: " << std::endl;
                 std::getline(std::cin, body);
-            }
-
-            if ((method != "GET") &&
-                (method != "DELETE") &&
-                (method != "POST"))
-            {
-                std::cerr << "\nInvalid method!" << std::endl;
-                continue;
             }
 
             Json::Value message;
             message["method"] = method;
             message["uri"] = uri;
-            if (!body.empty())
-            {
+            if (!body.empty()) {
                 message["body"] = body;
             }
 
-            std::cout << "\nSending message..." << std::endl;
-            auto pubmsg = mqtt::make_message(argv[1], message.toStyledString());
-            pubmsg->set_qos(QOS);
-            client.publish(pubmsg);
+            std::cout << "Sending message..." << std::endl;
+            auto mqtt_message = mqtt::make_message(argv[1], message.toStyledString());
+            mqtt_message->set_qos(QOS);
+            client.publish(mqtt_message);
             std::cout << "...OK" << std::endl;
         }
 
-        std::cout << "\nDisconnecting..." << std::endl;
+        std::cout << "Disconnecting..." << std::endl;
         client.disconnect();
         std::cout << "...OK" << std::endl;
     }
@@ -99,6 +78,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "\nExiting" << std::endl;
+    std::cout << "Exiting" << std::endl;
     return 0;
 }
