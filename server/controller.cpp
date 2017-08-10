@@ -84,12 +84,10 @@ void Controller::handleRequest(std::string request)
         if (elements.size() > 1) {
             int ID;
             std::istringstream (elements[1]) >> ID;
-            std::cout << "MODIFY" << std::endl;
             model_.modifyPost(ID, body);
         }
         else {
             model_.addPost(body);
-            std::cout << "ADD" << std::endl;
         }
     }
 }
