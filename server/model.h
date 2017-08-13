@@ -16,6 +16,4 @@ public:
 private:
     PGconn *connect();
     void disconnect(PGconn *connection);
-
-
 };
