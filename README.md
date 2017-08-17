@@ -1,6 +1,6 @@
 # SmartikoTestProject
 ## Prerequisites
-* postgresql-libpq
+* PostgreSQL libpq
 * Eclipse Paho MQTT C client library (paho.mqtt.c)
 * Eclipse Paho MQTT C++ client library (paho.mqtt.cpp)
 * JSONcpp
