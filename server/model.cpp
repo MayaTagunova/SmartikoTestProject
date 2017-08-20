@@ -2,7 +2,6 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <cstring>
-#include <sstream>
 
 Model::Model()
 {}
