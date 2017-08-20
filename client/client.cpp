@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstring>
 #include "mqtt/client.h"
-#include "jsoncpp/json/json.h"
+#include "json/json.h"
 
 const std::string SERVER_ADDRESS { "tcp://localhost:1883" };
 const std::string CLIENT_ID { "Smartiko-client" };
