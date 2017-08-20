@@ -4,13 +4,105 @@
 #include <map>
 #include <vector>
 #include <cstring>
+#include <sys/types.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sstream>
 #include "mqtt/client.h"
 #include "json/json.h"
+#include <microhttpd.h>
+
+#define PORT 8888
 
 const std::string SERVER_ADDRESS { "tcp://localhost:1883" };
 const std::string CLIENT_ID { "Smartiko-client" };
 
 const int QOS = 1;
+
+static void request_completed(void *cls,
+                              struct MHD_Connection *connection,
+                              void **con_cls,
+                              enum MHD_RequestTerminationCode toe)
+{
+    if (*con_cls == nullptr) {
+        return;
+    }
+
+    std::string *body = static_cast<std::string*>(*con_cls);
+    delete body;
+    *con_cls = nullptr;
+}
+
+int answer_to_connection(void *cls, struct MHD_Connection *connection,
+                         const char *url,
+                         const char *method, const char *version,
+                         const char *upload_data,
+                         size_t *upload_data_size, void **con_cls)
+{
+    if (*con_cls == nullptr) {
+        std::string *request_body = new std::string();
+        *con_cls = (void *)request_body;
+        if (0 == strcasecmp(method, MHD_HTTP_METHOD_POST)) {
+            return MHD_YES;
+        }
+    }
+
+    unsigned code = MHD_HTTP_INTERNAL_SERVER_ERROR;
+    std::string response_body;
+
+    if ((0 == strcasecmp(method, MHD_HTTP_METHOD_GET)) ||
+        (0 == strcasecmp(method, MHD_HTTP_METHOD_DELETE)) ||
+        (0 == strcasecmp(method, MHD_HTTP_METHOD_POST))) {
+
+        Json::Value message;
+        message["method"] = method;
+        message["uri"] = url;
+        std::string *request_body = static_cast<std::string*>(*con_cls);
+        if (*upload_data_size != 0) {
+            *request_body += std::string(upload_data, *upload_data_size);
+            *upload_data_size = 0;
+            return MHD_YES;
+        }
+        else {
+            if (!request_body->empty()) {
+                message["body"] = *request_body;
+            }
+            request_body->clear();
+        }
+
+        auto mqtt_message = mqtt::make_message("client_queue", message.toStyledString());
+        mqtt_message->set_qos(QOS);
+
+        mqtt::client *client = (mqtt::client *)cls;
+        client->publish(mqtt_message);
+        std::cout << "...OK" << std::endl;
+
+        std::string page = client->consume_message()->get_payload_str();
+        Json::Reader reader;
+        Json::Value value;
+
+        if (!reader.parse(page.c_str(), value)) {
+            return MHD_NO;
+        }
+
+        response_body = value["body"].asString();
+        if (value.isMember("code")) {
+            std::istringstream(value["code"].asString()) >> code;
+        }
+    }
+
+    struct MHD_Response *response = MHD_create_response_from_buffer(response_body.length(), (void*)response_body.c_str(), MHD_RESPMEM_MUST_COPY);
+    if (response == 0) {
+        return MHD_NO;
+    }
+    MHD_add_response_header(response,
+                            MHD_HTTP_HEADER_CONTENT_TYPE,
+                            "application/json");
+    int result = MHD_queue_response(connection, code, response);
+    MHD_destroy_response(response);
+
+    return result;
+}
 
 int main(int argc, char* argv[])
 {
@@ -28,50 +120,17 @@ int main(int argc, char* argv[])
 
         client.subscribe("server_queue", QOS);
 
-        while (true) {
-            std::cout << "Enter method (GET/DELETE/POST): " << std::endl;
+        struct MHD_Daemon *daemon;
 
-            std::string method;
-            std::getline(std::cin, method);
-
-            if ((method != "GET") &&
-                (method != "DELETE") &&
-                (method != "POST")) {
-                std::cerr << "Invalid method!" << std::endl;
-                continue;
-            }
-
-            std::cout << "Enter URI: " << std::endl;
-
-            std::string uri;
-            std::getline(std::cin, uri);
-
-            std::string body;
-
-            if (method == "POST") {
-                std::cout << "Enter body: " << std::endl;
-                std::getline(std::cin, body);
-            }
-
-            Json::Value message;
-            message["method"] = method;
-            message["uri"] = uri;
-            if (!body.empty()) {
-                message["body"] = body;
-            }
-
-            std::cout << "Sending message..." << std::endl;
-            auto mqtt_message = mqtt::make_message("client_queue", message.toStyledString());
-            mqtt_message->set_qos(QOS);
-            client.publish(mqtt_message);
-            std::cout << "...OK" << std::endl;
-
-            auto response = client.consume_message();
-
-            if (response) {
-                std::cout << response->get_payload_str() << std::endl;
-            }
+        daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, PORT, nullptr, nullptr,
+                                  &answer_to_connection, (void *)&client, MHD_OPTION_NOTIFY_COMPLETED, &request_completed, nullptr, MHD_OPTION_END);
+        if (daemon == nullptr) {
+            return 1;
         }
+
+        (void)getchar();
+
+        MHD_stop_daemon(daemon);
 
         std::cout << "Disconnecting..." << std::endl;
         client.disconnect();

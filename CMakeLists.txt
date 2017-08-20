@@ -14,8 +14,9 @@ find_library(LIBPAHO paho-mqtt3a)
 find_library(LIBPAHO_CPP paho-mqttpp3)
 find_library(LIBJSON jsoncpp)
 find_library(LIBPQ pq)
+find_library(LIBMICROHTTPD microhttpd)
 
-target_link_libraries(${PROJECT_NAME}-client ${LIBPAHO} ${LIBPAHO_CPP} ${LIBJSON})
+target_link_libraries(${PROJECT_NAME}-client ${LIBPAHO} ${LIBPAHO_CPP} ${LIBJSON} ${LIBMICROHTTPD})
 target_link_libraries(${PROJECT_NAME}-server ${LIBPAHO} ${LIBPAHO_CPP} ${LIBJSON} ${LIBPQ} pthread)
 
 set_property(TARGET ${PROJECT_NAME}-client PROPERTY CXX_STANDARD 14)

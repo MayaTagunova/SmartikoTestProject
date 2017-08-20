@@ -39,14 +39,17 @@ int main(int argc, char* argv[])
                 break;
             }
 
-            std::string response = controller.handleRequest(message->get_payload_str());
+            std::string body;
+            unsigned code = controller.handleRequest(message->get_payload_str(), body);
 
+            Json::Value response;
+            response["code"] = std::to_string(code);
+            response["body"] = body;
             std::cout << "Sending response..." << std::endl;
-            auto mqtt_message = mqtt::make_message("server_queue", response);
+            auto mqtt_message = mqtt::make_message("server_queue", response.toStyledString());
             mqtt_message->set_qos(QOS);
             client.publish(mqtt_message);
             std::cout << "...OK" << std::endl;
-
         }
 
         std::cout << "Disconnecting..." << std::flush;
