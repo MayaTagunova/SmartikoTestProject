@@ -104,7 +104,7 @@ int answer_to_connection(void *cls, struct MHD_Connection *connection,
     return result;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
 
