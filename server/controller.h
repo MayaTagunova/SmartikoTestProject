@@ -6,7 +6,7 @@ class Controller
 public:
     Controller(Model& model);
 
-    void handleRequest(std::string request);
+    unsigned handleRequest(std::string request, std::string &response);
 
 private:
     Model& model_;

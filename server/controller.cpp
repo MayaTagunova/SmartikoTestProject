@@ -9,21 +9,19 @@ Controller::Controller(Model& model)
     : model_(model)
 {}
 
-void Controller::handleRequest(std::string request)
+unsigned Controller::handleRequest(std::string request, std::string &response)
 {
+    unsigned code = HTTP_INTERNAL_SERVER_ERROR;
+
     Json::Reader reader;
 
     Json::Value message;
     if (!reader.parse(request.c_str(), message)) {
-        std::cerr  << "JSON parsing error: "
-                   << reader.getFormattedErrorMessages();
-        return;
+        return HTTP_BAD_REQUEST;
     }
 
     if (!message.isMember("uri")) {
-        std::cerr << "Invalid query: command not specified" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        return HTTP_BAD_REQUEST;
     }
 
     std::vector<std::string> elements;
@@ -38,56 +36,47 @@ void Controller::handleRequest(std::string request)
             elements.end());
 
     if (elements.size() == 0) {
-        std::cerr << "Invalid query: command not specified" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        return HTTP_NOT_FOUND;
     }
 
     if (elements[0] != SECTION) {
-        std::cerr << "Invalid query: command not recognized" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        return HTTP_NOT_FOUND;
     }
 
     if (message["method"] == "GET") {
         if (elements.size() < 2) {
-            std::cerr << "Invalid query: ID not specified" << std::endl;
-            std::cerr << "Usage: " << "GET /posts/<ID>" << std::endl;
-            return;
+            return HTTP_BAD_REQUEST;
         }
 
         int ID;
-        std::istringstream (elements[1]) >> ID;
-        model_.getPost(ID);
+        std::istringstream(elements[1]) >> ID;
+        code = model_.getPost(ID, response);
     }
     else if (message["method"] == "DELETE") {
         if (elements.size() < 2) {
-            std::cerr << "Invalid query: ID not specified" << std::endl;
-            std::cerr << "Usage: " << "DELETE /posts/<ID>" << std::endl;
-            return;
+            return HTTP_BAD_REQUEST;
         }
 
         int ID;
-        std::istringstream (elements[1]) >> ID;
-        model_.deletePost(ID);
+        std::istringstream(elements[1]) >> ID;
+        code = model_.deletePost(ID);
     }
     else if (message["method"] == "POST") {
         Json::Value body;
         if (message.isMember("body")) {
             if (!reader.parse(message["body"].asString(), body)) {
-                std::cerr << "Body was invalid JSON object" << std::endl;
-                std::cerr << "Usage: " << "POST /posts/[ID] {\"title\":<title>, \"content\":<content>}" << std::endl;
-                return;
+                return HTTP_BAD_REQUEST;
             }
         }
 
         if (elements.size() > 1) {
             int ID;
-            std::istringstream (elements[1]) >> ID;
-            model_.modifyPost(ID, body);
+            std::istringstream(elements[1]) >> ID;
+            code = model_.modifyPost(ID, body);
         }
         else {
-            model_.addPost(body);
+            code = model_.addPost(body);
         }
     }
+    return code;
 }
