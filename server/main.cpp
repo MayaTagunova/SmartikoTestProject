@@ -15,7 +15,7 @@ const std::string CLIENT_ID("Smartiko-server");
 
 const int QOS = 1;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     mqtt::connect_options options;
     options.set_keep_alive_interval(20);
