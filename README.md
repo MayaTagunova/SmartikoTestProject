@@ -5,6 +5,7 @@
 * Eclipse Paho MQTT C++ client library (paho.mqtt.cpp)
 * JSONcpp
 * Cmake
+* GNU libmicrohttpd
 ## Build instructions
 ```
 mkdir build
@@ -32,10 +33,30 @@ From SmartikoTestProject build directory, run in separate terminals:
 ```
 ./SmartikoTestProject-client <topic>
 ```
-Valid commands for the client are:
+In another terminal, run:
+```
+telnet localhost 8888
+```
 
-GET /posts/\<id\>
+Valid commands examples:
 
-DELETE /posts/\<id\>
+```
+GET /posts/1 HTTP/1.0
+```
+```
+DELETE /posts/1 HTTP/1.0
+```
+```
+POST /posts HTTP/1.0
+Content-Type: application/json
+Content-Length: 48
 
-POST /posts/[id] {"title":"\<title\>", "content":"\<content\>"}
+{"title":"A new post", "content":"Some content"}
+```
+```
+POST /posts/2 HTTP/1.0
+Content-Type: application/json
+Content-Length: 29
+
+{"content":"Updated content"}
+```
