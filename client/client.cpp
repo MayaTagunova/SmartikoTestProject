@@ -14,21 +14,19 @@ const int QOS = 1;
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <topic>" << std::endl;
-        return 1;
-    }
-
     mqtt::client client(SERVER_ADDRESS, CLIENT_ID);
 
     mqtt::connect_options options;
     options.set_keep_alive_interval(20);
     options.set_clean_session(true);
+    options.set_automatic_reconnect(true);
 
     try {
         std::cout << "Connecting..." << std::endl;
         client.connect(options);
         std::cout << "...OK" << std::endl;
+
+        client.subscribe("server_queue", QOS);
 
         while (true) {
             std::cout << "Enter method (GET/DELETE/POST): " << std::endl;
@@ -63,10 +61,16 @@ int main(int argc, char* argv[])
             }
 
             std::cout << "Sending message..." << std::endl;
-            auto mqtt_message = mqtt::make_message(argv[1], message.toStyledString());
+            auto mqtt_message = mqtt::make_message("client_queue", message.toStyledString());
             mqtt_message->set_qos(QOS);
             client.publish(mqtt_message);
             std::cout << "...OK" << std::endl;
+
+            auto response = client.consume_message();
+
+            if (response) {
+                std::cout << response->get_payload_str() << std::endl;
+            }
         }
 
         std::cout << "Disconnecting..." << std::endl;

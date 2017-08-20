@@ -9,21 +9,23 @@ Controller::Controller(Model& model)
     : model_(model)
 {}
 
-void Controller::handleRequest(std::string request)
+std::string Controller::handleRequest(std::string request)
 {
+    std::ostringstream response;
     Json::Reader reader;
 
     Json::Value message;
     if (!reader.parse(request.c_str(), message)) {
-        std::cerr  << "JSON parsing error: "
-                   << reader.getFormattedErrorMessages();
-        return;
+        response << "JSON parsing error: "
+                 << reader.getFormattedErrorMessages()
+                 << std::endl;
+        return response.str();
     }
 
     if (!message.isMember("uri")) {
-        std::cerr << "Invalid query: command not specified" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        response << "Invalid query: command not specified" << std::endl;
+        response << "Usage: " << "/posts/[ID]" << std::endl;
+        return response.str();
     }
 
     std::vector<std::string> elements;
@@ -38,33 +40,33 @@ void Controller::handleRequest(std::string request)
             elements.end());
 
     if (elements.size() == 0) {
-        std::cerr << "Invalid query: command not specified" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        response << "Invalid query: command not specified" << std::endl;
+        response << "Usage: " << "/posts/[ID]" << std::endl;
+        return response.str();
     }
 
     if (elements[0] != SECTION) {
-        std::cerr << "Invalid query: command not recognized" << std::endl;
-        std::cerr << "Usage: " << "/posts/[ID]" << std::endl;
-        return;
+        response << "Invalid query: command not recognized" << std::endl;
+        response << "Usage: " << "/posts/[ID]" << std::endl;
+        return response.str();
     }
 
     if (message["method"] == "GET") {
         if (elements.size() < 2) {
-            std::cerr << "Invalid query: ID not specified" << std::endl;
-            std::cerr << "Usage: " << "GET /posts/<ID>" << std::endl;
-            return;
+            response << "Invalid query: ID not specified" << std::endl;
+            response << "Usage: " << "GET /posts/<ID>" << std::endl;
+            return response.str();
         }
 
         int ID;
         std::istringstream (elements[1]) >> ID;
-        model_.getPost(ID);
+        response << model_.getPost(ID);
     }
     else if (message["method"] == "DELETE") {
         if (elements.size() < 2) {
-            std::cerr << "Invalid query: ID not specified" << std::endl;
-            std::cerr << "Usage: " << "DELETE /posts/<ID>" << std::endl;
-            return;
+            response << "Invalid query: ID not specified" << std::endl;
+            response << "Usage: " << "DELETE /posts/<ID>" << std::endl;
+            return response.str();
         }
 
         int ID;
@@ -75,9 +77,9 @@ void Controller::handleRequest(std::string request)
         Json::Value body;
         if (message.isMember("body")) {
             if (!reader.parse(message["body"].asString(), body)) {
-                std::cerr << "Body was invalid JSON object" << std::endl;
-                std::cerr << "Usage: " << "POST /posts/[ID] {\"title\":<title>, \"content\":<content>}" << std::endl;
-                return;
+                response << "Body was invalid JSON object" << std::endl;
+                response << "Usage: " << "POST /posts/[ID] {\"title\":<title>, \"content\":<content>}" << std::endl;
+                return response.str();
             }
         }
 
@@ -90,4 +92,5 @@ void Controller::handleRequest(std::string request)
             model_.addPost(body);
         }
     }
+    return response.str();
 }

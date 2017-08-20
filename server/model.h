@@ -8,10 +8,10 @@ class Model
 public:
     Model();
 
-    void getPost(int ID);
-    void deletePost(int ID);
-    void addPost(Json::Value body);
-    void modifyPost(int ID, Json::Value body);
+    std::string getPost(int ID);
+    std::string deletePost(int ID);
+    std::string addPost(Json::Value body);
+    std::string modifyPost(int ID, Json::Value body);
 
 private:
     PGconn *connect();

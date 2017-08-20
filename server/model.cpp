@@ -2,15 +2,17 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <cstring>
+#include <sstream>
 
 Model::Model()
 {}
 
-void Model::getPost(int ID)
+std::string Model::getPost(int ID)
 {
+    std::ostringstream response;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        return;
+        return response.str();
     }
 
     ID = htonl(ID);
@@ -28,26 +30,31 @@ void Model::getPost(int ID)
                                     0);
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-        std::cerr << "SELECT failed: " << PQerrorMessage(connection) << std::endl;
+        response << "SELECT failed: " << PQerrorMessage(connection) << std::endl;
     }
 
     if (PQntuples(result) == 0) {
-        std::cout << "Post not found" << std::endl;
+        response << "Post not found" << std::endl;
     }
     else {
-        std::cout << "title: " << PQgetvalue(result, 0, 2) << std::endl;
-        std::cout << "content: " << PQgetvalue(result, 0, 1) << std::endl;
+        Json::Value post;
+        post["title"] = PQgetvalue(result, 0, 2);
+        post["content"] = PQgetvalue(result, 0, 1);
+        response << post.toStyledString();
     }
 
     PQclear(result);
     disconnect(connection);
+    return response.str();
 }
 
-void Model::deletePost(int ID)
+std::string Model::deletePost(int ID)
 {
+    std::ostringstream response;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        return;
+        response << "Connection to the database failed" << std::endl;
+        return response.str();
     }
 
     ID = htonl(ID);
@@ -65,18 +72,21 @@ void Model::deletePost(int ID)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        std::cerr << "DELETE failed: " << PQerrorMessage(connection) << std::endl;
+        response << "DELETE failed: " << PQerrorMessage(connection) << std::endl;
     }
 
     PQclear(result);
     disconnect(connection);
+    return response.str();
 }
 
-void Model::addPost(Json::Value body)
+std::string Model::addPost(Json::Value body)
 {
+    std::ostringstream response;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        return;
+        response << "Connection to the database failed" << std::endl;
+        return response.str();
     }
 
     Json::Value content = body.get("content", "This is an empty and useless post");
@@ -94,18 +104,21 @@ void Model::addPost(Json::Value body)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        std::cerr << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
+        response << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
     }
 
     PQclear(result);
     disconnect(connection);
+    return response.str();
 }
 
-void Model::modifyPost(int ID, Json::Value body)
+std::string Model::modifyPost(int ID, Json::Value body)
 {
+    std::ostringstream response;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        return;
+        response << "Connection to the database failed" << std::endl;
+        return response.str();
     }
 
     const char *title = body.isMember("title") ? body["title"].asCString() : nullptr;
@@ -129,11 +142,12 @@ void Model::modifyPost(int ID, Json::Value body)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        std::cerr << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
+        response << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
     }
 
     PQclear(result);
     disconnect(connection);
+    return response.str();
 }
 
 PGconn *Model::connect()
