@@ -8,7 +8,8 @@ add_executable(${PROJECT_NAME}-client ${CLIENT_SRC_LIST})
 aux_source_directory(server SERVER_SRC_LIST)
 add_executable(${PROJECT_NAME}-server ${SERVER_SRC_LIST})
 
-include_directories(/usr/include/jsoncpp)
+find_path(JSONCPP_INCLUDE_PATH NAMES json/json.h PATH_SUFFIXES jsoncpp)
+include_directories(${JSONCPP_INCLUDE_PATH})
 
 find_library(LIBPAHO paho-mqtt3a)
 find_library(LIBPAHO_CPP paho-mqttpp3)

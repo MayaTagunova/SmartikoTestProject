@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <postgresql/libpq-fe.h>
 
 class Model
