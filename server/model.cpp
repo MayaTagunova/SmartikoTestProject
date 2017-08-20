@@ -7,12 +7,12 @@
 Model::Model()
 {}
 
-std::string Model::getPost(int ID)
+unsigned Model::getPost(int ID, std::string &response)
 {
-    std::ostringstream response;
+    unsigned code = HTTP_OK;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        return response.str();
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     ID = htonl(ID);
@@ -30,31 +30,30 @@ std::string Model::getPost(int ID)
                                     0);
 
     if (PQresultStatus(result) != PGRES_TUPLES_OK) {
-        response << "SELECT failed: " << PQerrorMessage(connection) << std::endl;
+        code = HTTP_INTERNAL_SERVER_ERROR;
     }
 
     if (PQntuples(result) == 0) {
-        response << "Post not found" << std::endl;
+        code = HTTP_NOT_FOUND;
     }
     else {
         Json::Value post;
         post["title"] = PQgetvalue(result, 0, 2);
         post["content"] = PQgetvalue(result, 0, 1);
-        response << post.toStyledString();
+        response = post.toStyledString();
     }
 
     PQclear(result);
     disconnect(connection);
-    return response.str();
+    return code;
 }
 
-std::string Model::deletePost(int ID)
+unsigned Model::deletePost(int ID)
 {
-    std::ostringstream response;
+    unsigned response = HTTP_OK;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        response << "Connection to the database failed" << std::endl;
-        return response.str();
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     ID = htonl(ID);
@@ -72,21 +71,20 @@ std::string Model::deletePost(int ID)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        response << "DELETE failed: " << PQerrorMessage(connection) << std::endl;
+        response = HTTP_INTERNAL_SERVER_ERROR;
     }
 
     PQclear(result);
     disconnect(connection);
-    return response.str();
+    return response;
 }
 
-std::string Model::addPost(Json::Value body)
+unsigned Model::addPost(Json::Value body)
 {
-    std::ostringstream response;
+    unsigned response = HTTP_CREATED;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        response << "Connection to the database failed" << std::endl;
-        return response.str();
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     Json::Value content = body.get("content", "This is an empty and useless post");
@@ -104,21 +102,20 @@ std::string Model::addPost(Json::Value body)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        response << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
+        response = HTTP_INTERNAL_SERVER_ERROR;
     }
 
     PQclear(result);
     disconnect(connection);
-    return response.str();
+    return response;
 }
 
-std::string Model::modifyPost(int ID, Json::Value body)
+unsigned Model::modifyPost(int ID, Json::Value body)
 {
-    std::ostringstream response;
+    unsigned response = HTTP_OK;
     PGconn *connection = connect();
     if (connection == nullptr) {
-        response << "Connection to the database failed" << std::endl;
-        return response.str();
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     const char *title = body.isMember("title") ? body["title"].asCString() : nullptr;
@@ -142,12 +139,12 @@ std::string Model::modifyPost(int ID, Json::Value body)
                                     0);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        response << "INSERT failed: " << PQerrorMessage(connection) << std::endl;
+        response = HTTP_INTERNAL_SERVER_ERROR;
     }
 
     PQclear(result);
     disconnect(connection);
-    return response.str();
+    return response;
 }
 
 PGconn *Model::connect()
